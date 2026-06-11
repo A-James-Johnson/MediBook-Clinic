@@ -1,21 +1,61 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
+const ACCESS_TOKEN_COOKIE = "access_token";
+const REFRESH_TOKEN_COOKIE = "refresh_token";
 
-function getTokens() {
-  if (typeof window === "undefined") return { access: null, refresh: null };
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name, value, options = {}) {
+  if (typeof document === "undefined") return;
+  const parts = [`${name}=${encodeURIComponent(value)}`];
+
+  if (options.maxAge != null) parts.push(`Max-Age=${options.maxAge}`);
+  if (options.path) parts.push(`Path=${options.path}`);
+  if (options.sameSite) parts.push(`SameSite=${options.sameSite}`);
+  if (options.secure) parts.push("Secure");
+  if (options.domain) parts.push(`Domain=${options.domain}`);
+  if (options.expires) parts.push(`Expires=${options.expires.toUTCString()}`);
+
+  document.cookie = parts.join("; ");
+}
+
+function deleteCookie(name) {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+}
+
+export function getTokens() {
   return {
-    access: localStorage.getItem("access_token"),
-    refresh: localStorage.getItem("refresh_token"),
+    access: getCookie(ACCESS_TOKEN_COOKIE),
+    refresh: getCookie(REFRESH_TOKEN_COOKIE),
   };
 }
 
 export function setTokens(access, refresh) {
-  localStorage.setItem("access_token", access);
-  localStorage.setItem("refresh_token", refresh);
+  const secure =
+    typeof window !== "undefined" && window.location.protocol === "https:";
+
+  setCookie(ACCESS_TOKEN_COOKIE, access, {
+    path: "/",
+    sameSite: "Lax",
+    secure,
+    maxAge: 60 * 5,
+  });
+
+  setCookie(REFRESH_TOKEN_COOKIE, refresh, {
+    path: "/",
+    sameSite: "Lax",
+    secure,
+    maxAge: 60 * 60 * 24 * 7,
+  });
 }
 
 export function clearTokens() {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
+  deleteCookie(ACCESS_TOKEN_COOKIE);
+  deleteCookie(REFRESH_TOKEN_COOKIE);
   localStorage.removeItem("user_role");
   localStorage.removeItem("user_id");
   localStorage.removeItem("profile_id");
@@ -46,7 +86,12 @@ async function refreshAccessToken() {
   }
 
   const data = await res.json();
-  localStorage.setItem("access_token", data.access);
+  setCookie(ACCESS_TOKEN_COOKIE, data.access, {
+    path: "/",
+    sameSite: "Lax",
+    secure: typeof window !== "undefined" && window.location.protocol === "https:",
+    maxAge: 60 * 5,
+  });
   return data.access;
 }
 

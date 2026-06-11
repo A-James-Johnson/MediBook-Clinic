@@ -6,6 +6,7 @@ import {
   authApi,
   clearTokens,
   decodeToken,
+  getTokens,
   resolveUserProfile,
   setTokens,
 } from "@/lib/api";
@@ -19,7 +20,7 @@ export function AuthProvider({ children }) {
   const router = useRouter();
 
   const loadUser = useCallback(async () => {
-    const access = localStorage.getItem("access_token");
+    const { access } = getTokens();
     if (!access) {
       setUser(null);
       setProfile(null);
