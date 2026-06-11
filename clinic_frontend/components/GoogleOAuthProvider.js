@@ -22,6 +22,7 @@ export default function AppGoogleOAuthProvider({ children }) {
   const clientId = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "").trim();
   const callbackRef = useRef(() => {});
   const [scriptReady, setScriptReady] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const registerCallback = useCallback((handler) => {
     callbackRef.current = handler;
@@ -31,7 +32,12 @@ export default function AppGoogleOAuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (!clientId || !scriptReady || gsiInitialized) return;
+    if (!clientId || !scriptReady || gsiInitialized) {
+      if (gsiInitialized && !initialized) {
+        setInitialized(true);
+      }
+      return;
+    }
     if (!window.google?.accounts?.id) return;
 
     window.google.accounts.id.initialize({
@@ -44,7 +50,8 @@ export default function AppGoogleOAuthProvider({ children }) {
     });
 
     gsiInitialized = true;
-  }, [clientId, scriptReady]);
+    setInitialized(true);
+  }, [clientId, scriptReady, initialized]);
 
   if (!clientId) {
     return children;
@@ -52,7 +59,7 @@ export default function AppGoogleOAuthProvider({ children }) {
 
   return (
     <GoogleAuthContext.Provider
-      value={{ registerCallback, scriptReady, clientId }}
+      value={{ registerCallback, scriptReady, clientId, initialized }}
     >
       <Script
         src="https://accounts.google.com/gsi/client"

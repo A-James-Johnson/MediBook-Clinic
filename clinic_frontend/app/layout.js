@@ -2,7 +2,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import AppGoogleOAuthProvider from "@/components/GoogleOAuthProvider";
-import { THEME_STORAGE_KEY } from "@/context/ThemeContext";
+import { THEME_STORAGE_KEY } from "@/lib/constants";
 
 export const metadata = {
   title: "MediBook Clinic - Appointment Booking",

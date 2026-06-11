@@ -4,7 +4,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext(null);
 
-export const THEME_STORAGE_KEY = "medibook-theme";
+import { THEME_STORAGE_KEY } from "@/lib/constants";
+export { THEME_STORAGE_KEY };
 
 export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState("light");

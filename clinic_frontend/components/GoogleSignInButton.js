@@ -27,7 +27,7 @@ export default function GoogleSignInButton({
 
   useEffect(() => {
     if (
-      !googleAuth?.scriptReady ||
+      !googleAuth?.initialized ||
       !buttonRef.current ||
       !window.google?.accounts?.id ||
       renderedRef.current
@@ -45,13 +45,14 @@ export default function GoogleSignInButton({
     });
     renderedRef.current = true;
 
+    const currentButton = buttonRef.current;
     return () => {
       renderedRef.current = false;
-      if (buttonRef.current) {
-        buttonRef.current.innerHTML = "";
+      if (currentButton) {
+        currentButton.innerHTML = "";
       }
     };
-  }, [googleAuth?.scriptReady, label]);
+  }, [googleAuth?.initialized, label]);
 
   if (!googleAuth?.clientId) {
     return null;
